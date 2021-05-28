@@ -22,13 +22,6 @@ G_BEGIN_DECLS
 
 #define TILDA_VERSION PACKAGE_NAME " " PACKAGE_VERSION
 
-struct lock_info
-{
-    gint pid;
-    gint instance;
-    gint file_descriptor;
-};
-
 #define GUINT16_TO_FLOAT(color) ((color) / (double) 0xFFFF)
 #define GUINT16_FROM_FLOAT(value) ((int) ((value) * 0xFFFF + 0.5))
 

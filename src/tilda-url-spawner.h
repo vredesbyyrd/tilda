@@ -13,19 +13,15 @@
  * License along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef VTE_UTIL_H
-#define VTE_UTIL_H
+#ifndef TILDA_URL_SPAWNER_H
+#define TILDA_URL_SPAWNER_H
 
-#include <glib.h>
-#include <vte/vte.h>
+#include <gtk/gtk.h>
 
-G_BEGIN_DECLS
+#include "tilda-match-registry.h"
 
-#define VTE_CHECK_VERSION_RUMTIME(major,minor,micro) \
-        (vte_get_major_version () > (major) || \
-        (vte_get_major_version () == (major) && vte_get_minor_version () > (minor)) || \
-        (vte_get_major_version () == (major) && vte_get_minor_version () == (minor) && vte_get_micro_version () >= (micro)))
+void tilda_url_spawner_spawn_browser_for_match (GtkWindow * parent,
+                                                const gchar * match,
+                                                TildaMatchRegistryEntry * entry);
 
-G_END_DECLS
-
-#endif
+#endif // TILDA_URL_SPAWNER_H

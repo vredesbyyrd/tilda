@@ -13,30 +13,21 @@
  * License along with this library. If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef TILDA_KEYBINDING_H
-#define TILDA_KEYBINDING_H
+#ifndef TILDA_LOCK_FILES_H
+#define TILDA_LOCK_FILES_H
 
-#include <gtk/gtk.h>
+#include "glib.h"
 
-#include "tilda_window.h"
+struct lock_info
+{
+    gint pid;
+    gint instance;
+    gint file_descriptor;
+    char * lock_file;
+};
 
-typedef struct TildaKeybindingTreeView_ TildaKeybindingTreeView;
+gboolean tilda_lock_files_obtain_instance_lock (struct lock_info * lock_info);
 
-TildaKeybindingTreeView *
-tilda_keybinding_init (GtkBuilder *builder);
+void tilda_lock_files_free (struct lock_info * lock_info);
 
-void
-tilda_keybinding_apply (TildaKeybindingTreeView *keybinding);
-
-gboolean
-tilda_keybinding_save (TildaKeybindingTreeView *keybinding,
-                       tilda_window *tw);
-
-void
-tilda_keybinding_show_invalid_keybinding_dialog (GtkWindow *parent,
-                                                 const gchar* message);
-
-void
-tilda_keybinding_free (TildaKeybindingTreeView *keybinding);
-
-#endif //TILDA_KEYBINDING_H
+#endif

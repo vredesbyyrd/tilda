@@ -21,7 +21,6 @@
 #include "tilda_window.h"
 #include "tilda_terminal.h"
 #include "key_grabber.h"
-#include "vte-util.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -233,30 +232,6 @@ static void tilda_window_apply_transparency (tilda_window *tw, gboolean status)
             tt = g_list_nth_data (tw->terms, i);
             vte_terminal_set_color_background(VTE_TERMINAL(tt->vte_term), &bg);
         }
-}
-
-static gboolean
-search_gregex_cb (TildaSearchBox       *search,
-                  GRegex               *regex,
-                  TildaSearchDirection  direction,
-                  gboolean              wrap_on_search,
-                  tilda_window         *tw)
-{
-    VteTerminal *vte_terminal;
-    tilda_term *term;
-
-    term = tilda_window_get_current_terminal (tw);
-
-    vte_terminal = VTE_TERMINAL (term->vte_term);
-
-    vte_terminal_search_set_gregex (vte_terminal, regex, (GRegexMatchFlags) 0);
-
-    vte_terminal_search_set_wrap_around (vte_terminal, wrap_on_search);
-
-    if (direction == SEARCH_BACKWARD)
-        return vte_terminal_search_find_previous (vte_terminal);
-    else
-        return vte_terminal_search_find_next (vte_terminal);
 }
 
 static gboolean
@@ -723,6 +698,8 @@ static gint tilda_add_config_accelerator_by_path(const gchar* key, const gchar* 
     GdkModifierType accel_mods;
     GClosure *temp;
 
+    if (strcmp(key, "NULL") == 0) return TRUE;
+
     gtk_accelerator_parse (config_getstr(key), &accel_key, &accel_mods);
     if (! ((accel_key == 0) && (accel_mods == 0)) )  // make sure it parsed properly
     {
@@ -956,6 +933,9 @@ gboolean tilda_window_init (const gchar *config_file, const gint instance, tilda
     /* Create the notebook */
     tw->notebook = gtk_notebook_new ();
 
+    /* Adding widget title for CSS selection */
+    gtk_widget_set_name (GTK_WIDGET(tw->window), "Main");
+
     /* Here we setup the CSS settings for the GtkNotebook.
      * If the option "Show notebook border" in the preferences is not
      * checked. Then we disable the border. Otherwise nothing is changed.
@@ -1029,17 +1009,16 @@ gboolean tilda_window_init (const gchar *config_file, const gint instance, tilda
     GtkWidget *main_box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     tw->search = tilda_search_box_new ();
 
+    GtkStyleContext *context = gtk_widget_get_style_context(main_box);
+    gtk_style_context_add_class(context, GTK_STYLE_CLASS_BACKGROUND);
+
     gtk_container_add (GTK_CONTAINER(tw->window), main_box);
     gtk_box_pack_start (GTK_BOX (main_box), tw->notebook, TRUE, TRUE, 0);
     gtk_box_pack_start (GTK_BOX (main_box), tw->search, FALSE, TRUE, 0);
 
-    if (VTE_CHECK_VERSION_RUMTIME (0, 56, 1)) {
-        g_signal_connect (tw->search, "search",
-                          G_CALLBACK (search_cb), tw);
-    } else {
-        g_signal_connect (tw->search, "search-gregex",
-                          G_CALLBACK (search_gregex_cb), tw);
-    }
+    g_signal_connect (tw->search, "search",
+                      G_CALLBACK (search_cb), tw);
+
     g_signal_connect (tw->search, "focus-out",
                       G_CALLBACK (search_focus_out_cb), tw);
 

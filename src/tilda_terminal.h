@@ -18,6 +18,7 @@
 
 #include "tilda_window.h"
 #include "tilda-palettes.h"
+#include "tilda-match-registry.h"
 
 #include <gtk/gtk.h>
 #include <vte/vte.h>
@@ -33,6 +34,7 @@ struct tilda_term_
     GtkWidget *scrollbar;
     GRegex *http_regexp;
     VteRegex *vte_regexp;
+    TildaMatchRegistry * registry;
     GPid pid;
     /* We remember if we have already dropped to the default
      * shell before, if so, then we know that this time we can
@@ -85,6 +87,8 @@ void tilda_term_adjust_font_scale(tilda_term *term, gdouble scale);
 
 gchar * tilda_terminal_get_full_title (tilda_term *tt);
 gchar * tilda_terminal_get_title (tilda_term *tt);
+
+void tilda_terminal_update_matches (tilda_term *tt);
 
 #define TILDA_TERM(tt) ((tilda_term *)(tt))
 
