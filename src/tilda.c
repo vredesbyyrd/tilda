@@ -41,6 +41,7 @@
 #include "debug.h"
 #include "key_grabber.h" /* for pull */
 #include "tilda-cli-options.h"
+#include "tilda-dbus-actions.h"
 #include "tilda-keybinding.h"
 #include "tilda-lock-files.h"
 #include "tilda_window.h"
@@ -279,7 +280,6 @@ int main (int argc, char *argv[])
 
     /* Set up possible overridden config options */
     setup_config_from_cli_options(cli_options);
-    g_free(cli_options);
 
     if (config_init_result > 0) {
         show_startup_dialog (config_init_result);
@@ -331,12 +331,32 @@ int main (int argc, char *argv[])
         }
     }
 
+    guint bus_identifier = 0;
+
+    if (cli_options->enable_dbus) {
+
+        gchar *bus_name = tilda_dbus_actions_get_bus_name (&tw);
+
+        g_print ("Activating D-Bus interface on bus name: %s\n",
+                 bus_name);
+
+        g_free (bus_name);
+
+        bus_identifier = tilda_dbus_actions_init (&tw);
+    }
+
+    g_free(cli_options);
+
     pull (&tw, config_getbool ("hidden") ? PULL_UP : PULL_DOWN, FALSE);
 
     g_print ("Tilda has started. Press %s to pull down the window.\n",
         config_getstr ("key"));
     /* Whew! We're finally all set up and ready to run GTK ... */
     gtk_main();
+
+    if (bus_identifier != 0) {
+        tilda_dbus_actions_finish (bus_identifier);
+    }
 
 initialization_failed:
     tilda_window_free(&tw);
